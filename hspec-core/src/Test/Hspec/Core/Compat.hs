@@ -87,6 +87,8 @@ import           Control.Exception as Imports (interruptible)
 import           GHC.IO
 #endif
 
+import           GHC.Types (Total, type(@))
+
 #if !MIN_VERSION_base(4,6,0)
 forkFinally :: IO a -> (Either SomeException a -> IO ()) -> IO ThreadId
 forkFinally action and_then =
@@ -156,7 +158,7 @@ interruptible act = do
     MaskedUninterruptible -> act
 #endif
 
-guarded :: Alternative m => (a -> Bool) -> a -> m a
+guarded :: (Total m, Alternative m) => (a -> Bool) -> a -> m a
 guarded p a = if p a then pure a else empty
 
 #if !MIN_VERSION_base(4,8,0)

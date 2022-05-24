@@ -16,6 +16,8 @@ import           Test.Hspec.Core.Config.Definition
 import qualified GetOpt.Declarative as Declarative
 import           GetOpt.Declarative.Interpret (parse, interpretOptions, ParseResult(..))
 
+import           GHC.Types (Total)
+
 type ConfigFile = (FilePath, [String])
 type EnvVar = [String]
 
@@ -51,7 +53,7 @@ parseOptions config prog configFiles envVar env args = do
   >>= parseEnvironmentOptions env
   >>= traverseTuple (parseCommandLineOptions prog args)
 
-traverseTuple :: Applicative f => (a -> f b) -> (c, a) -> f (c, b)
+traverseTuple :: (Applicative f, Total f) => (a -> f b) -> (c, a) -> f (c, b)
 #if MIN_VERSION_base(4,7,0)
 traverseTuple = traverse
 #else

@@ -217,6 +217,7 @@ import Data.Semigroup (Semigroup((<>)))
 
 import Data.IORef
 
+import GHC.Types (Total, type(@))
 import GHC.Exts
 import GHC.IO hiding (finally, onException)
 import GHC.Conc
@@ -845,7 +846,7 @@ concurrently_ left right = concurrently' left right (collect 0)
 -- for each element of the @Traversable@, so running this on large
 -- inputs without care may lead to resource exhaustion (of memory,
 -- file descriptors, or other limited resources).
-mapConcurrently :: Traversable t => (a -> IO b) -> t a -> IO (t b)
+mapConcurrently ::  (t @ Concurrently b, Traversable t) => (a -> IO b) -> t a -> IO (t b)
 mapConcurrently f = runConcurrently . traverse (Concurrently . f)
 
 -- | `forConcurrently` is `mapConcurrently` with its arguments flipped
@@ -853,7 +854,7 @@ mapConcurrently f = runConcurrently . traverse (Concurrently . f)
 -- > pages <- forConcurrently ["url1", "url2", "url3"] $ \url -> getURL url
 --
 -- @since 2.1.0
-forConcurrently :: Traversable t => t a -> (a -> IO b) -> IO (t b)
+forConcurrently :: (t @ Concurrently b, Traversable t) => t a -> (a -> IO b) -> IO (t b)
 forConcurrently = flip mapConcurrently
 
 -- | `mapConcurrently_` is `mapConcurrently` with the return value discarded;

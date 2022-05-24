@@ -29,6 +29,8 @@ import           Test.Hspec.Core.Example (Progress, Location(..), FailureReason(
 import           Test.Hspec.Core.Util (Path)
 import           Test.Hspec.Core.Clock (Seconds(..))
 
+import GHC.Types (type(@))
+
 type Format = Event -> IO ()
 
 data Item = Item {
@@ -70,7 +72,7 @@ data FormatConfig = FormatConfig {
 
 data Signal = Ok | NotOk SomeException
 
-monadic :: MonadIO m => (m () -> IO ()) -> (Event -> m ()) -> IO Format
+monadic :: (m @ Event, MonadIO m) => (m () -> IO ()) -> (Event -> m ()) -> IO Format
 monadic run format = do
   mvar <- newEmptyMVar
   done <- newEmptyMVar

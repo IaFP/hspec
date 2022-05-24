@@ -50,6 +50,8 @@ import           Test.Hspec.Core.Example (safeEvaluateResultStatus)
 import qualified NonEmpty
 import           NonEmpty (NonEmpty(..))
 
+import           GHC.Types (Total, type(@))
+
 data Tree c a =
     Node String (NonEmpty (Tree c a))
   | NodeWithCleanup (Maybe (String, Location)) c (NonEmpty (Tree c a))
@@ -220,22 +222,27 @@ data Semaphore = Semaphore {
 , semaphoreSignal :: IO ()
 }
 
-parallelizeTree :: MonadIO m => Int -> [EvalTree] -> IO [RunningTree_ m]
+parallelizeTree :: (Total m, MonadIO m) => Int -> [EvalTree] -> IO [RunningTree_ m]
 parallelizeTree n specs = do
   sem <- newQSem n
   mapM (traverse $ parallelizeItem sem) specs
 
-parallelizeItem :: MonadIO m => QSem -> EvalItem -> IO (RunningItem_ m)
+parallelizeItem :: (Total m, MonadIO m) => QSem -> EvalItem -> IO (RunningItem_ m)
 parallelizeItem sem EvalItem{..} = do
   (asyncAction, evalAction) <- parallelize (Semaphore (waitQSem sem) (signalQSem sem)) evalItemParallelize (interruptible . evalItemAction)
   return (asyncAction, Item evalItemDescription evalItemLocation evalAction)
 
-parallelize :: MonadIO m => Semaphore -> Bool -> Job IO p a -> IO (Async (), Job m p (Seconds, a))
+parallelize :: (
+  MonadIO m,
+  Total m)
+  => Semaphore -> Bool -> Job IO p a -> IO (Async (), Job m p (Seconds, a))
 parallelize sem isParallelizable
   | isParallelizable = runParallel sem
   | otherwise = runSequentially
 
-runSequentially :: MonadIO m => Job IO p a -> IO (Async (), Job m p (Seconds, a))
+runSequentially :: (
+  MonadIO m, Total m)
+  => Job IO p a -> IO (Async (), Job m p (Seconds, a))
 runSequentially action = do
   mvar <- newEmptyMVar
   (asyncAction, evalAction) <- runParallel (Semaphore (takeMVar mvar) (return ())) action
@@ -243,7 +250,7 @@ runSequentially action = do
 
 data Parallel p a = Partial p | Return a
 
-runParallel :: forall m p a. MonadIO m => Semaphore -> Job IO p a -> IO (Async (), Job m p (Seconds, a))
+runParallel :: forall m p a. (MonadIO m, Total m) => Semaphore -> Job IO p a -> IO (Async (), Job m p (Seconds, a))
 runParallel Semaphore{..} action = do
   mvar <- newEmptyMVar
   asyncAction <- async $ E.bracket_ semaphoreWait semaphoreSignal (worker mvar)

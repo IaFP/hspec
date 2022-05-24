@@ -1,3 +1,5 @@
+{-# LANGUAGE PartialTypeConstructors #-}
+
 -- |
 -- /NOTE:/ This module is not meant for public consumption.  For user
 -- documentation look at http://hspec.github.io/hspec-discover.html.

@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, OverloadedStrings #-}
+{-# LANGUAGE PartialTypeConstructors #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 -- | A preprocessor that finds and combines specs.
 --
@@ -20,7 +21,7 @@ module Test.Hspec.Discover.Run (
 ) where
 import           Control.Monad
 import           Control.Applicative
-import           Data.List
+import           Data.List hiding (elem, null, all, concatMap, foldr)
 import           Data.Char
 import           Data.Maybe
 import           Data.String

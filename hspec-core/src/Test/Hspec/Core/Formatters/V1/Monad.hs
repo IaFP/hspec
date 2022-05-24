@@ -50,6 +50,8 @@ import           Test.Hspec.Core.Formatters.V1.Free
 import           Test.Hspec.Core.Clock
 import           Test.Hspec.Core.Format
 
+import           GHC.Types (Total, type(@))
+
 data Formatter = Formatter {
 
   headerFormatter :: FormatM ()
@@ -152,7 +154,7 @@ data Environment m = Environment {
 , environmentLiftIO :: forall a. IO a -> m a
 }
 
-interpretWith :: forall m a. Monad m => Environment m -> FormatM a -> m a
+interpretWith :: forall m a. (Total m, Monad m) => Environment m -> FormatM a -> m a
 interpretWith Environment{..} = go
   where
     go :: forall b. FormatM b -> m b

@@ -1,3 +1,4 @@
+{-# LANGUAGE PartialTypeConstructors #-}
 -- |
 -- /NOTE:/ This module is not meant for public consumption.  For user
 -- documentation look at http://hspec.github.io/hspec-discover.html.
@@ -9,7 +10,7 @@ module Test.Hspec.Discover.Sort (
 
 import           Control.Arrow
 import           Data.Char
-import           Data.List
+import           Data.List hiding (length)
 import           Data.Ord
 
 sortNaturallyBy :: (a -> (String, Int)) -> [a] -> [a]
